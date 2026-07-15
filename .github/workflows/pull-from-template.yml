@@ -1,0 +1,44 @@
+name: Pull UIKit from Template
+
+on:
+  workflow_dispatch:
+
+jobs:
+  pull-template-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project Repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SYNC_PAT }}
+          path: gus-repo-2
+
+      - name: Checkout Template Repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'brandonkylely/gus-template'
+          token: ${{ secrets.SYNC_PAT }}
+          path: gus-template
+
+      - name: Pull
+        run: |
+          mkdir -p gus-repo-2/client/uikit/
+
+          rsync -av --delete \
+            --exclude 'custom/' \
+            gus-template/client/uikit/ gus-repo-2/client/uikit/
+
+      - name: Create PR in Project Repo
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.SYNC_PAT }}
+          path: gus-repo-2
+          commit-message: "chore(uikit): pull latest updates from template"
+          title: "Sync UIKit from Template"
+          body: |
+            Automated pull to sync shared components from the upstream template.
+            
+            *Note: Files in `uikit/custom/` have been preserved.*
+          branch: sync/uikit-from-template
+          base: master
+          delete-branch: true

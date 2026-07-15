@@ -1,0 +1,49 @@
+name: Sync UIKit to Template
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'uikit/**'
+  workflow_dispatch:
+
+jobs:
+  sync-to-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project Repo
+        uses: actions/checkout@v4
+        with:
+          path: gus-repo-2
+
+      - name: Checkout Template Repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'brandonkylely/gus-template'
+          token: ${{ secrets.SYNC_PAT }}
+          path: gus-template
+
+      - name: Sync
+        run: |
+          # Create template uikit directory if it doesn't exist
+          mkdir -p gus-template/client/uikit/
+
+          rsync -av --delete \
+            --exclude 'custom/' \
+            gus-repo-2/client/uikit/ gus-template/client/uikit/
+
+      - name: Create PR in Template Repo
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.SYNC_PAT }}
+          path: gus-template
+          commit-message: "chore(uikit): sync updates from ${{ github.event.repository.name }}"
+          title: "Sync UIKit from ${{ github.event.repository.name }}"
+          body: |
+            This is an automated PR to sync shared UIKit components from **${{ github.event.repository.name }}**.
+            
+            *Note: Files in `uikit/custom/` were automatically ignored.*
+          branch: sync/uikit-from-${{ github.event.repository.name }}
+          base: master
+          delete-branch: true
