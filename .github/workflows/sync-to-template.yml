@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'uikit/**'
+      - 'client/uikit/**'
   workflow_dispatch:
 
 jobs:
@@ -26,12 +26,11 @@ jobs:
 
       - name: Sync
         run: |
-          # Create template uikit directory if it doesn't exist
-          mkdir -p gus-template/client/uikit/
+          mkdir -p "$GITHUB_WORKSPACE/gus-template/client/uikit"
 
           rsync -av --delete \
             --exclude 'custom/' \
-            gus-repo-2/client/uikit/ gus-template/client/uikit/
+            "$GITHUB_WORKSPACE/gus-repo-2/client/uikit/" "$GITHUB_WORKSPACE/gus-template/client/uikit/"
 
       - name: Create PR in Template Repo
         uses: peter-evans/create-pull-request@v6
@@ -43,7 +42,7 @@ jobs:
           body: |
             This is an automated PR to sync shared UIKit components from **${{ github.event.repository.name }}**.
             
-            *Note: Files in `uikit/custom/` were automatically ignored.*
+            *Note: Files in `client/uikit/custom/` were automatically ignored.*
           branch: sync/uikit-from-${{ github.event.repository.name }}
           base: master
           delete-branch: true
