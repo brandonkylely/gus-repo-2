@@ -22,11 +22,13 @@ jobs:
 
       - name: Pull
         run: |
-          mkdir -p gus-repo-2/client/uikit/
+          # Create project uikit directory if it doesn't exist
+          mkdir -p "$GITHUB_WORKSPACE/gus-repo-2/client/uikit"
 
+          # Sync template changes downstream using robust absolute paths
           rsync -av --delete \
             --exclude 'custom/' \
-            gus-template/client/uikit/ gus-repo-2/client/uikit/
+            "$GITHUB_WORKSPACE/gus-template/client/uikit/" "$GITHUB_WORKSPACE/gus-repo-2/client/uikit/"
 
       - name: Create PR in Project Repo
         uses: peter-evans/create-pull-request@v6
@@ -38,7 +40,7 @@ jobs:
           body: |
             Automated pull to sync shared components from the upstream template.
             
-            *Note: Files in `uikit/custom/` have been preserved.*
+            *Note: Your local proprietary files in `client/uikit/custom/` have been preserved.*
           branch: sync/uikit-from-template
           base: master
           delete-branch: true
