@@ -1,0 +1,3 @@
+text component revision 1
+
+line of change for component
